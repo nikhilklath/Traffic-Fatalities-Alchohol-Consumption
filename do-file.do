@@ -1,11 +1,15 @@
 clear all
+/*
+This is based off of a data set used in a paper examining the effects of trucks on traffic
+fatalities, but in doing so it also collected data on alcohol consumption as additional covariates.
+*/
 
-// use folder location here
+// change folder location here
 local x "C:\Users\nikhi\Downloads\data\data" 
 cd `x'
 
 ********************************
-* Part 1 *
+* Part 1 - Append the data*
 
 // store all file names in a local variable
 local files : dir "`x'" files "*.csv"
@@ -32,7 +36,7 @@ foreach file in `files' {
 save final.dta, replace // save the final data
 
 *******************************
-* Part 2 *
+* Part 2 - Clean the Data *
 
 mdesc
 // There are no missing values in the data
@@ -51,7 +55,7 @@ drop if beer == . | population == . | fatalities == .
 encode state, gen(st)
 
 ********************************
-* Part 3 *
+* Part 3 - Graph*
 
 qui reg population totalvmt
 // store the slope from regression result
@@ -60,7 +64,7 @@ twoway (scatter population totalvmt, mfcolor(red) mlcolor(black)) (lfit populati
 graph save assgn_graph_3.gph, replace
 
 *******************************
-* part 4 * 
+* part 4 - OLS model* 
 
 // store the values for each regression
 eststo: reg fatalities beer i.year
@@ -73,8 +77,8 @@ esttab using reg_table1, se ar2 drop(*.st *.year )  label  nonumbers mtitles("OL
 
 *********************************
 
-* part 5 *
-//. clear previously stored estimates
+* part 5 IV Model*
+// clear previously stored estimates
 eststo clear 
 
 eststo: ivregress 2sls fatalities (beer = friesprice) i.year i.st, first
